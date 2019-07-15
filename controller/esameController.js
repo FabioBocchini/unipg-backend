@@ -60,10 +60,9 @@ const inserisciVoto = (request, response) => {
 		[ corso, matricola, voto, giorno ],
 		(error, results) => {
 			if (error) {
-				response.status(403).send('Esame già presente')
-			} else {
-				response.status(201).send(`Esame inserito: ${matricola}, ${corso}`)
+				throw error
 			}
+			response.status(201).send(`Esame inserito: ${matricola}, ${corso}`)
 		}
 	)
 }

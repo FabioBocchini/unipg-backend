@@ -7,6 +7,15 @@ const pool = new Pool({
 	password: 'postgres'
 })
 
+const getCorso = (request, response) => {
+	pool.query('SELECT * FROM corso', (error, results) => {
+		if (error) {
+			throw error
+		}
+		response.status(200).json(results.rows)
+	})
+}
+
 //utilizzato per ricevere i corsi di un certo prof
 const getCorsoFromProf = (request, response) => {
 	const professore = request.params.professore
@@ -20,5 +29,6 @@ const getCorsoFromProf = (request, response) => {
 }
 
 module.exports = {
+	getCorso,
 	getCorsoFromProf
 }
