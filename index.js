@@ -4,6 +4,7 @@ const professore = require('./controller/professoreController')
 const studente = require('./controller/studenteController')
 const corso = require('./controller/corsoController')
 const esame = require('./controller/esameController')
+const { requireProfessoreAuth, requireStudenteAuth } = require('./middleware/authMiddlewares')
 const cors = require('cors')
 const app = express()
 const port = 3001
@@ -27,14 +28,14 @@ app.listen(port, () => {
 
 app.post('/professori/login', professore.postProfLogin)
 
-app.get('/studenti', studente.getStudente)
+app.get('/studenti', requireProfessoreAuth, studente.getStudente)
 app.post('/studenti/email', studente.checkEmail)
 app.post('/studenti/login', studente.postStudLogin)
 app.post('/studenti/nuovo', studente.postNuovoStudente)
 
-app.get('/corsi/:professore', corso.getCorsoFromProf)
+app.get('/corsi/:professore', requireProfessoreAuth, corso.getCorsoFromProf)
 
-app.get('/studenti/esami/:matricola', esame.getStudEsami)
-app.post('/esami/nuovo', esame.inserisciVoto)
-app.put('/studenti/esami/', esame.accettaEsame)
-app.delete('/studenti/esami/:corso/:matricola', esame.rifiutaEsame)
+app.get('/studenti/esami/:matricola', requireStudenteAuth, esame.getStudEsami)
+app.post('/esami/nuovo', requireProfessoreAuth, esame.inserisciVoto)
+app.put('/studenti/esami/', requireStudenteAuth, esame.accettaEsame)
+app.delete('/studenti/esami/:corso/:matricola', requireStudenteAuth, esame.rifiutaEsame)

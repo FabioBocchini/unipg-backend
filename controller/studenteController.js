@@ -1,3 +1,5 @@
+const { tokenForUser } = require('../middleware/authentications')
+const bcrypt = require('bcrypt-nodejs')
 const { Pool } = require('pg')
 
 const pool = new Pool({
@@ -20,6 +22,7 @@ const getStudente = (request, response) => {
 //controlla l'esistenza di una email o di una matricola durante la registrazione
 const checkEmail = (request, response) => {
 	const { email, matricola } = request.body
+	let value = false
 	pool.query('SELECT * FROM studente WHERE email = $1 OR matricola = $2', [ email, matricola ], (error, results) => {
 		if (error) {
 			throw error
@@ -34,6 +37,7 @@ const checkEmail = (request, response) => {
 //usato per login studente
 const postStudLogin = (request, response) => {
 	const { email, password } = request.body
+
 	pool.query(
 		'SELECT matricola, nome, cognome, password FROM studente WHERE email = $1',
 		[ email ],
@@ -43,12 +47,17 @@ const postStudLogin = (request, response) => {
 			}
 			if (results.rows.length > 0) {
 				const user = results.rows[0]
-				if (user.password === password) {
-					delete user.password
-					return response.status(200).json(user)
-				}
+				bcrypt.compare(password, user.password, (err, ismatch) => {
+					if (err) {
+						return response.sendStatus(401)
+					} else {
+						delete user.password
+						return response.status(200).json({ user, token: tokenForUser(email) })
+					}
+				})
+			} else {
+				response.sendStatus(401)
 			}
-			response.sendStatus(401)
 		}
 	)
 }
@@ -56,16 +65,27 @@ const postStudLogin = (request, response) => {
 //usato per la registrazione di un nuovo studente
 const postNuovoStudente = (request, response) => {
 	const { matricola, nome, cognome, email, password } = request.body
-	pool.query(
-		'INSERT INTO studente VALUES($1,$2,$3,$4,$5)',
-		[ matricola, nome, cognome, email, password ],
-		(error, results) => {
-			if (error) {
-				throw error
-			}
-			response.status(201).send(`Studente added: ${matricola}`)
+	bcrypt.genSalt(10, (error, salt) => {
+		if (error) {
+			return response.sendStatus(500)
 		}
-	)
+		bcrypt.hash(password, salt, null, (err, hash) => {
+			console.log(hash.length)
+			if (err) {
+				return response.sendStatus(500)
+			}
+			pool.query(
+				'INSERT INTO studente VALUES($1,$2,$3,$4,$5)',
+				[ matricola, nome, cognome, email, hash ],
+				(error, results) => {
+					if (error) {
+						throw error
+					}
+					response.status(201).send(`Studente added: ${matricola}`)
+				}
+			)
+		})
+	})
 }
 
 module.exports = {

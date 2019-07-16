@@ -52,7 +52,7 @@ const getStudEsami = (request, response) => {
 	)
 }
 
-// put di un nuovo voto da parte di un professore
+// post di un nuovo voto da parte di un professore
 const inserisciVoto = (request, response) => {
 	const { corso, matricola, voto, giorno } = request.body
 	pool.query(
@@ -62,7 +62,7 @@ const inserisciVoto = (request, response) => {
 			if (error) {
 				throw error
 			}
-			response.status(201).send(`Esame inserito: ${matricola}, ${corso}`)
+			response.status(200).send('esame inserito')
 		}
 	)
 }
