@@ -20,7 +20,6 @@ const getStudente = (request, response) => {
 //controlla l'esistenza di una email o di una matricola durante la registrazione
 const checkEmail = (request, response) => {
 	const { email, matricola } = request.body
-	let value = false
 	pool.query('SELECT * FROM studente WHERE email = $1 OR matricola = $2', [ email, matricola ], (error, results) => {
 		if (error) {
 			throw error

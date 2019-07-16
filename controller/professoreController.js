@@ -7,15 +7,6 @@ const pool = new Pool({
 	password: 'postgres'
 })
 
-const getProfessore = (request, response) => {
-	pool.query('SELECT * FROM professore', (error, results) => {
-		if (error) {
-			throw error
-		}
-		response.status(200).json(results.rows)
-	})
-}
-
 const getProfByEmail = (request, response) => {
 	const email = request.params.email
 
@@ -61,7 +52,6 @@ const postProfLogin = (request, response) => {
 }
 
 module.exports = {
-	getProfessore,
 	getProfByEmail,
 	postProfLogin,
 	postProf
